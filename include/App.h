@@ -1,26 +1,8 @@
-// ==========================================================================
-//
-// Software written by Boguslaw Cyganek (C) to be used with the book:
-// INTRODUCTION TO PROGRAMMING WITH C++ FOR ENGINEERS
-// Published by Wiley, 2020
-//
-// The software is supplied as is and for educational purposes
-// without any guarantees nor responsibility of its use in any application. 
-//
-// ==========================================================================
-
-
 #ifndef APP_H
 #define APP_H
 
 
-#include <stdio.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_timer.h>
-#include <iostream>
-#include <string>
-#include <cmath>
+#include "Entity.h"
 
 using std::cin;
 
@@ -49,14 +31,19 @@ private:
 	//Current displayed texture
 	SDL_Texture* gTexture = NULL;
 
+	//Takes user input
+	void handleEvents();
+
+	//Updates everything
+	void update();
 
 public:
 	Game(int screen_width, int screen_height);
 	int screen_width = 1920;
 	int screen_height = 1080;
 	void run();
+	Entity Test;
 };
-
 
 
 #endif //APP_H
