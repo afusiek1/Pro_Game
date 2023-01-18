@@ -13,6 +13,3 @@ int main(int argc, char* args[]){
     cin >> a;
     return 0;
 }
-
-
-

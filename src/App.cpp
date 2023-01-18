@@ -56,45 +56,38 @@ bool Game::loadMedia() {
     //Loading success flag
     bool success = true;
 
-    //Load PNG texture
-    gTexture = loadTexture("Bckgnd.png");
-    if (gTexture == NULL)
-    {
-        printf("Failed to load texture image!\n");
+    //Initializing vector of textures
+    textures.resize(TextureID::size, LTexture());
+
+    //Load default texture
+    if (!textures[TextureID::Background].loadFromFile(gRenderer, "Default.png")) {
+        printf("Failed to load background texture image!\n");
+        success = false;
+    }
+
+    Entity::SetDefaultTexture(textures[TextureID::Default]);
+
+    //Load background texture
+    if (!textures[TextureID::Background].loadFromFile(gRenderer, "Bckgnd.png")) {
+        printf("Failed to load background texture image!\n");
+        success = false;
+    }
+
+    //Load Crow od Judgement
+    if (!textures[TextureID::Crow].loadFromFile(gRenderer, "Crow.png")) {
+        printf("Failed to load Crow od Judgement!\n");
         success = false;
     }
 
     return success;
 }
 
-SDL_Texture* Game::loadTexture(std::string path)
-{
-    //The final texture
-    SDL_Texture* newTexture = NULL;
-
-    //Load image at specified path
-    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-    if (loadedSurface == NULL)
-    {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
-    }
-    else
-    {
-        //Create texture from surface pixels
-        newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-        if (newTexture == NULL)
-        {
-            printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-        }
-
-        //Get rid of old loaded surface
-        SDL_FreeSurface(loadedSurface);
-    }
-    SDL_SetTextureBlendMode(newTexture, SDL_BLENDMODE_BLEND);
-    return newTexture;
-}
-
 void Game::close() {
+
+    //Free images
+    for (int i{}; i < textures.size(); ++i) {
+        textures[i].free();
+    }
 
     //Destroy window
     SDL_DestroyRenderer(gRenderer);
@@ -113,9 +106,20 @@ void Game::render() {
     SDL_RenderClear(gRenderer);
 
     //Render texture to screen
-    SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
+    textures[TextureID::Background].render(gRenderer, 0, 0 );
 
     Test.render(gRenderer);
+
+    //Render map boundaries
+    SDL_Rect fillRect = { (screen_width / 16) - 6, 0, 6, screen_height * 5 / 6 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+    fillRect = { (screen_width / 16) - 6, screen_height * 5 / 6, screen_width * 10 / 16 + 12, 6 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+    fillRect = { (screen_width * 11 / 16), 0, 6, screen_height * 5 / 6 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
 
     //Update screen
     SDL_RenderPresent(gRenderer);
@@ -133,20 +137,20 @@ void Game::handleEvents() {
         else if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
             //Adjust the velocity
             switch (e.key.keysym.sym) {
-            case SDLK_UP: Test.update(0, -2); break;
-            case SDLK_DOWN: Test.update(0, 2); break;
-            case SDLK_LEFT: Test.update(-2, 0); break;
-            case SDLK_RIGHT: Test.update(2, 0); break;
+            case SDLK_UP: Test.update({ 0, -2 }); break;
+            case SDLK_DOWN: Test.update({ 0, 2 }); break;
+            case SDLK_LEFT: Test.update({ -2, 0 }); break;
+            case SDLK_RIGHT: Test.update({ 2, 0 }); break;
             }
         }
         //If a key was released
         else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
             //Adjust the velocity
             switch (e.key.keysym.sym) {
-            case SDLK_UP: Test.update(0, 2); break;
-            case SDLK_DOWN: Test.update(0, -2); break;
-            case SDLK_LEFT: Test.update(2, 0); break;
-            case SDLK_RIGHT: Test.update(-2, 0); break;
+            case SDLK_UP: Test.update({ 0, 2 }); break;
+            case SDLK_DOWN: Test.update({ 0, -2 }); break;
+            case SDLK_LEFT: Test.update({ 2, 0 }); break;
+            case SDLK_RIGHT: Test.update({ -2, 0 }); break;
             }
         }
     }
@@ -186,8 +190,8 @@ Game::Game(int screen_width, int screen_height)
             printf("Failed to load media!\n");
         }
         else {
-            Entity::setBoundaries(screen_width / 16, screen_width * 11 / 16);
-            Test = Entity(screen_width / 2, screen_height * 15 / 16, 40, 30);
+            Entity::setBoundaries(screen_width / 16, screen_width * 11 / 16, 0, screen_height * 5 / 6);
+            Test = Entity(screen_width / 2, screen_height /2, &textures[TextureID::Crow]);
         }
     }
 

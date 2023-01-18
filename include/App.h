@@ -3,8 +3,8 @@
 
 
 #include "Entity.h"
+#include <SDL_timer.h>
 
-using std::cin;
 
 class Game {
 private:
@@ -25,11 +25,8 @@ private:
 	//The window renderer
 	SDL_Renderer* gRenderer = NULL;
 
-	//Loads individual image as texture
-	SDL_Texture* loadTexture(std::string path);
-
 	//Current displayed texture
-	SDL_Texture* gTexture = NULL;
+	vector<LTexture> textures;
 
 	//Takes user input
 	void handleEvents();
@@ -43,6 +40,8 @@ public:
 	int screen_height = 1080;
 	void run();
 	Entity Test;
+
+
 };
 
 
