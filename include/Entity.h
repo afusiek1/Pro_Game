@@ -16,10 +16,10 @@ public:
     const LTexture* draw;
 
     //Maximum velocity of the entity
-    static const int REC_VEL = 10;
+    int maximumSpeed = 40;
 
     //Initializes the variables
-    Entity(int xpos, int ypos, const LTexture* reference);
+    Entity(Vec2D pos, const LTexture* pointer, Vec2D size2);
     Entity();
 
     //Moves the entity
@@ -31,6 +31,9 @@ public:
     //Updates parameters for entity
     void update(Vec2D velocity);
 
+    //Sets entity's position
+    void setPos(Vec2D pos) { position = pos; }
+
     //Map boundaries
     static void setBoundaries(int LeftBound, int RightBound, int UpBound, int DownBound);
     static int LeftBound;
@@ -41,7 +44,7 @@ public:
     //Set default texture
     static void SetDefaultTexture(const LTexture& Default);
 
-private:
+protected:
 
     static LTexture DefaultTexture;
 
@@ -49,6 +52,9 @@ private:
 
     //The velocity of the entity
     Vec2D velocity;
+
+    //Dimensions of entity
+    Vec2D size;
 };
 
 

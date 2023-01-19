@@ -60,7 +60,7 @@ bool Game::loadMedia() {
     textures.resize(TextureID::size, LTexture());
 
     //Load default texture
-    if (!textures[TextureID::Background].loadFromFile(gRenderer, "Default.png")) {
+    if (!textures[TextureID::Default].loadFromFile(gRenderer, "Default.png")) {
         printf("Failed to load background texture image!\n");
         success = false;
     }
@@ -106,9 +106,11 @@ void Game::render() {
     SDL_RenderClear(gRenderer);
 
     //Render texture to screen
-    textures[TextureID::Background].render(gRenderer, 0, 0 );
+    textures[TextureID::Background].render(gRenderer, { 0, 0 }, {screen_width, screen_height});
 
-    Test.render(gRenderer);
+    for (int i{};i < unitList.size();++i) {
+        unitList[i].render(gRenderer);
+    }
 
     //Render map boundaries
     SDL_Rect fillRect = { (screen_width / 16) - 6, 0, 6, screen_height * 5 / 6 };
@@ -118,6 +120,9 @@ void Game::render() {
     SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
     fillRect = { (screen_width * 11 / 16), 0, 6, screen_height * 5 / 6 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+    fillRect = { (screen_width * 3 / 4), 0, 10, screen_height };
     SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
 
@@ -136,28 +141,38 @@ void Game::handleEvents() {
         //If a key was pressed
         else if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
             //Adjust the velocity
-            switch (e.key.keysym.sym) {
-            case SDLK_UP: Test.update({ 0, -2 }); break;
-            case SDLK_DOWN: Test.update({ 0, 2 }); break;
-            case SDLK_LEFT: Test.update({ -2, 0 }); break;
-            case SDLK_RIGHT: Test.update({ 2, 0 }); break;
+            for (int i{};i < unitList.size();++i) {
+                if (unitList[i].istype("Infantry")) {
+                    switch (e.key.keysym.sym) {
+                    case SDLK_UP: unitList[i].update({ 0, -2 }); break;
+                    case SDLK_DOWN: unitList[i].update({ 0, 2 }); break;
+                    case SDLK_LEFT: unitList[i].update({ -2, 0 }); break;
+                    case SDLK_RIGHT: unitList[i].update({ 2, 0 }); break;
+                    }
+                }
             }
         }
         //If a key was released
         else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
             //Adjust the velocity
-            switch (e.key.keysym.sym) {
-            case SDLK_UP: Test.update({ 0, 2 }); break;
-            case SDLK_DOWN: Test.update({ 0, -2 }); break;
-            case SDLK_LEFT: Test.update({ 2, 0 }); break;
-            case SDLK_RIGHT: Test.update({ -2, 0 }); break;
+            for (int i{};i < unitList.size();++i) {
+                if (unitList[i].istype("Infantry")) {
+                    switch (e.key.keysym.sym) {
+                    case SDLK_UP: unitList[i].update({ 0, 2 }); break;
+                    case SDLK_DOWN: unitList[i].update({ 0, -2 }); break;
+                    case SDLK_LEFT: unitList[i].update({ 2, 0 }); break;
+                    case SDLK_RIGHT: unitList[i].update({ -2, 0 }); break;
+                    }
+                }
             }
         }
     }
 }
 
 void Game::update() {
-    Test.move();
+    for (int i{};i < unitList.size();++i) {
+        unitList[i].move();
+    }
 }
 
 void Game::run() {
@@ -176,9 +191,23 @@ void Game::run() {
     close();
 }
 
+void Game::initializeUnits() {
+
+    unitMap["Player"] = Unit(100.0, 69, 70, 213.7, 0.4, 8, 0, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Crow], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Tank"] = Unit(1000.0, 69, 70, 2137.0, 0.4, 8, 2, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(96 * scale_x), (int)(96 * scale_y) });
+
+    unitList.push_back(unitMap["Tank"]);
+    unitList.push_back(unitMap["Player"]);
+    unitList.push_back(unitMap["Player"]);
+    unitList[2].setPos({ 200,200 });
+
+}
+
 Game::Game(int screen_width, int screen_height)
 :screen_width(screen_width),screen_height(screen_height) {
 
+    scale_x = (double) screen_width / 1920.f;
+    scale_y = (double) screen_height / 1080.f;
 
     //Start up SDL and create window
     if (!init()) {
@@ -191,7 +220,10 @@ Game::Game(int screen_width, int screen_height)
         }
         else {
             Entity::setBoundaries(screen_width / 16, screen_width * 11 / 16, 0, screen_height * 5 / 6);
-            Test = Entity(screen_width / 2, screen_height /2, &textures[TextureID::Crow]);
+
+            initializeUnits();
+
+            //unitMap["Player"] = Entity({screen_width / 2, screen_height / 2}, &textures[TextureID::Crow], { (int)(32 * scale_x), (int)(32 * scale_y) });
         }
     }
 

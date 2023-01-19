@@ -1,5 +1,7 @@
 #include "Textures.h"
 
+
+
 LTexture::LTexture() {
 
 	//Initialize
@@ -63,6 +65,13 @@ void LTexture::render(SDL_Renderer* rend, Vec2D position) const {
 
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { position.x, position.y, tWidth, tHeight };
+	SDL_RenderCopy(rend, mTexture, NULL, &renderQuad);
+}
+
+void LTexture::render(SDL_Renderer* rend, Vec2D position, Vec2D size) const {
+
+	//Set rendering space and render to screen
+	SDL_Rect renderQuad = { position.x, position.y, size.x, size.y };
 	SDL_RenderCopy(rend, mTexture, NULL, &renderQuad);
 }
 

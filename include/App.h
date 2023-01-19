@@ -1,9 +1,9 @@
 #ifndef APP_H
 #define APP_H
 
-
-#include "Entity.h"
+#include "Unit.h"
 #include <SDL_timer.h>
+#include <map>
 
 
 class Game {
@@ -12,6 +12,7 @@ private:
 	bool loadMedia();
 	void close();
 	void render();
+	void initializeUnits();
 
 	//The window we'll be rendering to
 	SDL_Window* gWindow = NULL;
@@ -39,8 +40,10 @@ public:
 	int screen_width = 1920;
 	int screen_height = 1080;
 	void run();
-	Entity Test;
-
+	double scale_x = 1.f;
+	double scale_y = 1.f;
+	std::map<std::string, Unit> unitMap;
+	vector<Unit> unitList;
 
 };
 

@@ -29,6 +29,7 @@ public:
 
     //Renders texture at given point
     void render(SDL_Renderer* rend, Vec2D position) const;
+    void render(SDL_Renderer* rend, Vec2D position, Vec2D size) const;
     void render(SDL_Renderer* rend, int x, int y) const;
 
     //Gets image dimensions

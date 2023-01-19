@@ -1,17 +1,19 @@
 #include "Entity.h"
 
-Entity::Entity(int xpos, int ypos,const LTexture* reference)
-    :draw(reference), position{ xpos, ypos }, velocity {0,0} {
+
+
+Entity::Entity(Vec2D pos, const LTexture* pointer, Vec2D size2)
+    :draw(pointer), position(pos), velocity{ 0,0 }, size(size2) {
 
 }
 
 Entity::Entity()
-    :draw(&DefaultTexture), position{ 0, 0 }, velocity{ 0,0 } {
+    :draw(&DefaultTexture), position{ 0, 0 }, velocity{ 0,0 }, size{DefaultTexture.getWidth(), DefaultTexture.getHeight()} {
 }
 
 void Entity::update(Vec2D v) {
-    velocity.x = std::max(std::min(v.x+velocity.x, REC_VEL), -REC_VEL);
-    velocity.y = std::max(std::min(v.y+velocity.y, REC_VEL), -REC_VEL);
+    velocity.x = std::max(std::min(v.x+velocity.x, maximumSpeed), -maximumSpeed);
+    velocity.y = std::max(std::min(v.y+velocity.y, maximumSpeed), -maximumSpeed);
 }
 
 void Entity::move() {
@@ -19,7 +21,7 @@ void Entity::move() {
     position.x += velocity.x;
 
     //If the entity went too far to the left or right
-    if ((position.x < LeftBound) || (position.x + draw->getWidth() > RightBound)) {
+    if ((position.x < LeftBound) || (position.x + size.x > RightBound)) {
         //Move back
         position.x -= velocity.x;
     }
@@ -27,7 +29,7 @@ void Entity::move() {
     position.y += velocity.y;
 
     //If the entity went too far up or down
-    if ((position.y < UpBound) || (position.y + draw->getHeight() > DownBound)) {
+    if ((position.y < UpBound) || (position.y + size.y > DownBound)) {
         //Move back
         position.y -= velocity.y;
     }
@@ -51,7 +53,7 @@ void Entity::render(SDL_Renderer* eRenderer) {
 
     //Render CROW OF JUDGMENT
 
-    draw->render(eRenderer, position);
+    draw->render(eRenderer, position, size);
 
 }
 
