@@ -2,6 +2,7 @@
 #define APP_H
 
 #include "Unit.h"
+#include "Button.h"
 #include <SDL_timer.h>
 #include <map>
 
@@ -13,6 +14,7 @@ private:
 	void close();
 	void render();
 	void initializeUnits();
+	void initializeButtons();
 
 	//The window we'll be rendering to
 	SDL_Window* gWindow = NULL;
@@ -35,8 +37,17 @@ private:
 	//Updates everything
 	void update();
 
+	//Renders text
+	void TextRender();
+
 	//Render map boundaries
 	void RenderMap();
+
+	//Camera speed
+	const double cameraAddSpeed = 1;
+
+	//Camera velociy
+	double cameraVelocity{};
 
 	//Frame information
 	LTexture frameInfo;
@@ -49,7 +60,13 @@ private:
 
 	//Current time start time
 	Uint32 lastTime = 0;
-	Uint32 elapsedTime = 0;
+	double elapsedTime = 0;
+
+	//Vector of all buttons
+	vector<LButton> allButtons;
+
+	//Selected unit
+	std::string currentUnit = "None selected";
 
 public:
 	Game(int screen_width, int screen_height);

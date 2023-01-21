@@ -15,7 +15,7 @@ protected:
 	std::string type;
 
 public:
-	Unit(double HP, int SR, int DR, double DMG, double SS, int MS, int A, bool iAP, std::string Class, Vec2D pos, const LTexture* pointer, Vec2D size2);
+	Unit(double HP, int SR, int DR, double DMG, double SS, int MS, int A, bool iAP, std::string Class, Vec2D pos, const LTexture* pointer, Vec2I size2);
 	Unit();
 
 	bool istype(const std::string& isClass) const { return type == isClass; }

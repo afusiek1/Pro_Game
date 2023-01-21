@@ -98,7 +98,7 @@ void LTexture::render(SDL_Renderer* rend, Vec2D position) const {
 	SDL_RenderCopy(rend, mTexture, NULL, &renderQuad);
 }
 
-void LTexture::render(SDL_Renderer* rend, Vec2D position, Vec2D size) const {
+void LTexture::render(SDL_Renderer* rend, Vec2D position, Vec2I size) const {
 
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { position.x, position.y, size.x, size.y };
@@ -110,6 +110,11 @@ void LTexture::render(SDL_Renderer* rend, int x, int y) const {
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = {x, y, tWidth, tHeight };
 	SDL_RenderCopy(rend, mTexture, NULL, &renderQuad);
+}
+
+void LTexture::setAlpha(Uint8 alpha) {
+	//Alter texture's alpha value
+	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
 int LTexture::getWidth() const {

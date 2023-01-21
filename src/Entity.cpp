@@ -2,7 +2,7 @@
 
 
 
-Entity::Entity(Vec2D pos, const LTexture* pointer, Vec2D size2)
+Entity::Entity(Vec2D pos, const LTexture* pointer, Vec2I size2)
     :draw(pointer), position(pos), velocity{ 0,0 }, size(size2) {
 
 }
@@ -16,22 +16,22 @@ void Entity::update(Vec2D v) {
     velocity.y = std::max(std::min(v.y+velocity.y, maximumSpeed), -maximumSpeed);
 }
 
-void Entity::move() {
+void Entity::move(double elapsedTime) {
     //Move the entity left or right
-    position.x += velocity.x;
+    position.x += velocity.x * elapsedTime;
 
     //If the entity went too far to the left or right
     if ((position.x < LeftBound) || (position.x + size.x > RightBound)) {
         //Move back
-        position.x -= velocity.x;
+        position.x -= velocity.x * elapsedTime;
     }
     //Move the entity up or down
-    position.y += velocity.y;
+    position.y += velocity.y * elapsedTime;
 
     //If the entity went too far up or down
     if ((position.y < UpBound) || (position.y + size.y > DownBound)) {
         //Move back
-        position.y -= velocity.y;
+        position.y -= velocity.y * elapsedTime;
     }
 }
 

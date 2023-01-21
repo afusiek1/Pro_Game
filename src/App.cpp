@@ -62,30 +62,30 @@ bool Game::loadMedia() {
     bool success = true;
 
     //Initializing vector of textures
-    textures.resize(TextureID::size, LTexture());
+    textures.resize(TextureID::SIZE, LTexture());
 
     //Load default texture
-    if (!textures[TextureID::Default].loadFromFile(gRenderer, "Default.png")) {
+    if (!textures[TextureID::DEFAULT].loadFromFile(gRenderer, "Default.png")) {
         printf("Failed to load background texture image!\n");
         success = false;
     }
 
-    Entity::SetDefaultTexture(textures[TextureID::Default]);
+    Entity::SetDefaultTexture(textures[TextureID::DEFAULT]);
 
     //Load background texture
-    if (!textures[TextureID::Background].loadFromFile(gRenderer, "Bckgnd.png")) {
+    if (!textures[TextureID::BACKGROUND].loadFromFile(gRenderer, "Bckgnd.png")) {
         printf("Failed to load background texture image!\n");
         success = false;
     }
 
     //Load Crow od Judgement
-    if (!textures[TextureID::Crow].loadFromFile(gRenderer, "Crow.png")) {
+    if (!textures[TextureID::CROW].loadFromFile(gRenderer, "Crow.png")) {
         printf("Failed to load Crow od Judgement!\n");
         success = false;
     }
 
     //Open the font
-    gFont = TTF_OpenFont("../../../Font/ka1.ttf", 16);
+    gFont = TTF_OpenFont("../../../Font/ka1.ttf", (int) (16 * scale_y));
     if (gFont == NULL)
     {
         printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -120,10 +120,35 @@ void Game::close() {
 
 void Game::RenderMap() {
 
+    Vec2I UnitSize = unitMap[currentUnit].getSize();
+
+    /////Render blue zone of putting units /////
+
+    //Left boundary
+    SDL_Rect fillRect = { screen_width / 16 + (int)(UnitSize.x/2 * scale_x), screen_height / 2 + (int)(UnitSize.y/2 * scale_y) - (int)cameraPosition.y, 1, screen_height * 3 / 8  - (int)(UnitSize.y * scale_y) };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+
+    //Bottom boundary
+    fillRect = { screen_width / 16 + (int)(UnitSize.x / 2 * scale_x), screen_height * 7 / 8 - (int)(UnitSize.y / 2 * scale_y) - (int)cameraPosition.y, screen_width * 5 / 8 - (int)(UnitSize.x * scale_x) , 1 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+
+    //Right boundary
+    fillRect = { screen_width / 16 + (int)(UnitSize.x / 2 * scale_x) + screen_width * 5 / 8 - (int)(UnitSize.x * scale_x) , screen_height / 2 + (int)(UnitSize.y / 2 * scale_y) - (int)cameraPosition.y, 1, screen_height * 3 / 8 - (int)(UnitSize.y * scale_y) };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+
+    //Top boundary
+    fillRect = { screen_width / 16 + (int)(UnitSize.x / 2 * scale_x), screen_height / 2 + (int)(UnitSize.y / 2 * scale_y) - (int)cameraPosition.y, screen_width * 5 / 8 - (int)(UnitSize.x * scale_x) , 1 };
+    SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
+    SDL_RenderFillRect(gRenderer, &fillRect);
+
+
     /////Render pink map boundaries/////
 
-//Left boundary
-    SDL_Rect fillRect = { screen_width / 16 - 6, screen_height / 16, 6, screen_height * 7 / 8 };
+    //Left boundary
+    fillRect = { screen_width / 16 - 6, screen_height / 16, 6, screen_height * 7 / 8 };
     SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
 
@@ -132,7 +157,7 @@ void Game::RenderMap() {
     SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
 
-    //right boundary
+    //Right boundary
     fillRect = { screen_width * 11 / 16, screen_height / 16, 6, screen_height * 15 / 16 };
     SDL_SetRenderDrawColor(gRenderer, 0xDB, 0x4A, 0xE0, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
@@ -176,7 +201,7 @@ void Game::render() {
     SDL_RenderClear(gRenderer);
 
     //Render texture to screen
-    textures[TextureID::Background].render(gRenderer, { 0, 0 }, {screen_width, screen_height});
+    textures[TextureID::BACKGROUND].render(gRenderer, { 0, 0 }, {screen_width, screen_height});
 
     for (int i{};i < unitList.size();++i) {
         if (unitList[i].getPos().y - cameraPosition.y < screen_height * 15 / 16 && unitList[i].getPos().y + unitList[i].getSize().y - cameraPosition.y > screen_height / 16) {
@@ -186,24 +211,49 @@ void Game::render() {
 
     RenderMap();
 
+    for (int i{};i < allButtons.size(); ++i) {
+        if (allButtons[i].buttonName == currentUnit) allButtons[i].setAlpha(128);
+        allButtons[i].render(gRenderer);
+        allButtons[i].setAlpha(255);
+    }
+
+    TextRender();
+
+    //Update screen
+    SDL_RenderPresent(gRenderer);
+}
+
+void Game::TextRender() {
+
     //In memory text stream
     std::stringstream timeText;
 
     //Set text to be rendered
     timeText.str("");
-    timeText << "t: " << elapsedTime << "ms  fps: " << 1000.0/(double)elapsedTime;
+    timeText << "t  " << elapsedTime << "ms  fps  " << 1000.0 / (double)elapsedTime;
 
     //Render text
-    if (!frameInfo.loadFromRenderedText(timeText.str().c_str(), textColor, gRenderer, gFont))
-    {
+    if (!frameInfo.loadFromRenderedText(timeText.str().c_str(), textColor, gRenderer, gFont)) {
         printf("Unable to render time related texture!\n");
     }
 
     //Render text
-    frameInfo.render(gRenderer, { std::min(screen_width - frameInfo.getWidth(), screen_width * 7 / 8), 10 });
+    frameInfo.render(gRenderer, { std::min(screen_width - frameInfo.getWidth(), screen_width * 7 / 8), (int)(10 * scale_y) });
 
-    //Update screen
-    SDL_RenderPresent(gRenderer);
+    //In memory text stream
+    std::stringstream unitText;
+
+    //Set text to be rendered
+    unitText.str("");
+    unitText << "Selected unit  " << currentUnit;
+
+    //Render text
+    if (!frameInfo.loadFromRenderedText(unitText.str().c_str(), textColor, gRenderer, gFont)) {
+        printf("Unable to render unit related texture!\n");
+    }
+
+    //Render text
+    frameInfo.render(gRenderer, { std::min(screen_width - frameInfo.getWidth(), screen_width * 7 / 8), screen_height - (int)(30 * scale_y) });
 }
 
 void Game::handleEvents() {
@@ -219,41 +269,87 @@ void Game::handleEvents() {
             
             //Adjust the velocity
             switch (e.key.keysym.sym) {
-            case SDLK_UP: cameraPosition.y -= 30; break;
-            case SDLK_DOWN: cameraPosition.y += 10; break;
+            case SDLK_UP: cameraVelocity -= cameraAddSpeed; break;
+            case SDLK_DOWN: cameraVelocity += cameraAddSpeed; break;
             }
         }
 
         else if (e.type == SDL_KEYDOWN && e.key.repeat > 0) {
 
             //Adjust the velocity
-            switch (e.key.keysym.sym) {
-            case SDLK_UP: cameraPosition.y -= 30; break;
-            case SDLK_DOWN: cameraPosition.y += 10; break;
-            }
+            //switch (e.key.keysym.sym) {
+            //case SDLK_UP: cameraPosition.y -= cameraSpeed * elapsedTime; break;
+            //case SDLK_DOWN: cameraPosition.y += cameraSpeed * elapsedTime; break;
+            //}
         }
 
         //If a key was released
         else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
             //Adjust the velocity
-            //switch (e.key.keysym.sym) {
-            //case SDLK_UP: unitList[i].update({ 0, 2 }); break;
-            //case SDLK_DOWN: unitList[i].update({ 0, -2 }); break;
-            //}
+            switch (e.key.keysym.sym) {
+            case SDLK_UP: cameraVelocity += cameraAddSpeed; break;
+            case SDLK_DOWN: cameraVelocity -= cameraAddSpeed; break;
+            }
+        }
+        //If mouse event happened
+        else if (e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP) {
+
+            //Get mouse position
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+
+            Vec2I UnitSize = unitMap[currentUnit].getSize();
+
+            if ((x > screen_width / 16 + UnitSize.x / 2) && (x < screen_width * 11 / 16 - UnitSize.x / 2) && (y > screen_height / 2 + cameraPosition.y + UnitSize.y / 2) && (y < screen_height * 7 / 8 + cameraPosition.y - UnitSize.y / 2)) {
+                if (e.type == SDL_MOUSEBUTTONDOWN) {
+                    Unit UnitTemp = unitMap[currentUnit];
+                    UnitTemp.setPos({ x - UnitSize.x / 2, y - UnitSize.y / 2 });
+                    UnitTemp.update({ 0.0, -0.1 });
+                    unitList.push_back(UnitTemp);
+                }
+            }
+            else {
+                for (int i{}; i < allButtons.size(); ++i) {
+                    allButtons[i].handleEvent(&e);
+                }
+            }
         }
     }
-    cameraPosition.y = std::min(cameraPosition.y, 0);
-    cameraPosition.y = std::max(cameraPosition.y, -screen_height);
 }
 
 void Game::update() {
 
     Uint32 time = SDL_GetTicks();
-    elapsedTime = time - lastTime;
+    elapsedTime = (double) (time - lastTime);
     lastTime = time;
 
+    cameraPosition.y = std::min(cameraPosition.y + cameraVelocity * elapsedTime, 0.0);
+    cameraPosition.y = std::max(cameraPosition.y, (double) - screen_height);
+
     for (int i{};i < unitList.size();++i) {
-        unitList[i].move();
+        unitList[i].move(elapsedTime);
+    }
+
+    vector<int> pressedButtons;
+
+    for (int j{}; j < allButtons.size(); ++j) {
+        if (allButtons[j].isPressed()) {
+            pressedButtons.push_back(j);
+        }
+    }
+    for (int i{}; i < pressedButtons.size(); ++i) {
+        std::string name = allButtons[pressedButtons[i]].buttonName;
+        if (name == "Rifleman") currentUnit = "Rifleman";
+        else if (name == "Machine Gunner") currentUnit = "Machine Gunner";
+        else if (name == "Sniper") currentUnit = "Sniper";
+        else if (name == "Bazooker") currentUnit = "Bazooker";
+        else if (name == "Car with machine gun") currentUnit = "Car with machine gun";
+        else if (name == "Armored Car with turret") currentUnit = "Armored Car with turret";
+        else if (name == "RPG Car") currentUnit = "RPG Car";
+        else if (name == "Minigun Car") currentUnit = "Minigun Car";
+        else if (name == "Tank") currentUnit = "Tank";
+        else if (name == "Big Tank") currentUnit = "Big Tank";
+        else if (name == "Artillery") currentUnit = "Artillery";
     }
 }
 
@@ -276,34 +372,94 @@ void Game::run() {
 void Game::initializeUnits() {
 
     //Debug player unit
-    unitMap["Player"] = Unit(1000.0, 500, 1000, 1000, 0.4, 10, 10, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Crow], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["None Selected"] = Unit(1000.0, 500, 1000, 1000, 0.4, 10, 10, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::CROW], { (int)(0 * scale_x), (int)(0 * scale_y) });
 
     //Bases
-    unitMap["Blue Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Red Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Blue Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Red Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
 
     //Infantry units
-    unitMap["Rifleman"] = Unit(15.0, 50, 70, 2.5, 1.2, 4, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Machine Gunner"] = Unit(30.0, 40, 60, 2, 0.4, 3, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Sniper"] = Unit(10.0, 120, 150, 12, 3, 4, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Bazooker"] = Unit(35.0, 60, 75, 50, 5, 3, 0, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Rifleman"] = Unit(15.0, 50, 70, 2.5, 1.2, 4, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(32 * scale_x), (int)(32 * scale_y) });
+    unitMap["Machine Gunner"] = Unit(30.0, 40, 60, 2, 0.4, 3, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(32 * scale_x), (int)(32 * scale_y) });
+    unitMap["Sniper"] = Unit(10.0, 120, 150, 12, 3, 4, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(32 * scale_x), (int)(32 * scale_y) });
+    unitMap["Bazooker"] = Unit(35.0, 60, 75, 50, 5, 3, 0, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(32 * scale_x), (int)(32 * scale_y) });
 
     //Car units
-    unitMap["Car with machine gun"] = Unit(55.0, 45, 65, 2, 0.35, 8, 1, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Armored Car with turret"] = Unit(110.0, 65, 80, 10, 1.4, 6, 2, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["RPG Car"] = Unit(70.0, 70, 90, 50, 5, 8, 1, true, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Minigun Car"] = Unit(140.0, 30, 60, 4, 0.2, 10, 1, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Car with machine gun"] = Unit(55.0, 45, 65, 2, 0.35, 8, 1, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Armored Car with turret"] = Unit(110.0, 65, 80, 10, 1.4, 6, 2, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["RPG Car"] = Unit(70.0, 70, 90, 50, 5, 8, 1, true, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Minigun Car"] = Unit(140.0, 30, 60, 4, 0.2, 10, 1, false, "Car", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
 
     //Tank units
-    unitMap["Tank"] = Unit(240.0, 60, 80, 25, 2, 2, 3, false, "Tank", { screen_width / 3, screen_height / 3 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Big Tank"] = Unit(450.0, 70, 90, 40, 3, 2, 4, false, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Artillery"] = Unit(160.0, 150, 200, 120, 8, 1, 3, true, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::Default], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Tank"] = Unit(240.0, 60, 80, 25, 2, 2, 3, false, "Tank", { screen_width / 3, screen_height / 3 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
+    unitMap["Big Tank"] = Unit(450.0, 70, 90, 40, 3, 2, 4, false, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
+    unitMap["Artillery"] = Unit(160.0, 150, 200, 120, 8, 1, 3, true, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
+}
 
-    unitList.push_back(unitMap["Tank"]);
-    unitList.push_back(unitMap["Player"]);
-    unitList.push_back(unitMap["Player"]);
-    unitList[2].setPos({ 200,200 });
+void Game::initializeButtons() {
 
+    allButtons = vector<LButton>(11);
+    
+    /////Set buttons/////
+
+    //row 1
+    allButtons[0].setPosition({ (int) (screen_width * 3 / 4 + 96 * scale_x), screen_height / 16 });
+    allButtons[0].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[0].buttonTexture = &textures[TextureID::DEFAULT];
+    allButtons[0].buttonName = "Rifleman";
+
+    allButtons[1].setPosition({ (int) (screen_width * 3 / 4 + 224 * scale_x) , screen_height / 16 });
+    allButtons[1].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[1].buttonTexture = &textures[TextureID::CROW];
+    allButtons[1].buttonName = "Machine Gunner";
+
+    allButtons[2].setPosition({ (int) (screen_width * 3 / 4 + 352 * scale_x), screen_height / 16 });
+    allButtons[2].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[2].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[2].buttonName = "Sniper";
+
+    //row 2
+    allButtons[3].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 3 / 16 });
+    allButtons[3].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[3].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[3].buttonName = "Bazooker";
+
+    allButtons[4].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 3 / 16 });
+    allButtons[4].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[4].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[4].buttonName = "Car with machine gun";
+
+    allButtons[5].setPosition({ (int)(screen_width * 3 / 4 + 352 * scale_x), screen_height * 3 / 16 });
+    allButtons[5].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[5].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[5].buttonName = "Armored Car with turret";
+
+    //row 3
+    allButtons[6].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 5 / 16 });
+    allButtons[6].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[6].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[6].buttonName = "RPG Car";
+
+    allButtons[7].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 5 / 16 });
+    allButtons[7].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[7].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[7].buttonName = "Minigun Car";
+
+    allButtons[8].setPosition({ (int)(screen_width * 3 / 4 + 352 * scale_x), screen_height * 5 / 16 });
+    allButtons[8].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[8].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[8].buttonName = "Tank";
+
+    //row 4
+    allButtons[9].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 7 / 16 });
+    allButtons[9].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[9].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[9].buttonName = "Big Tank";
+
+    allButtons[10].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 7 / 16 });
+    allButtons[10].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
+    allButtons[10].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[10].buttonName = "Artillery";
 }
 
 Game::Game(int screen_width, int screen_height)
@@ -322,15 +478,10 @@ Game::Game(int screen_width, int screen_height)
             printf("Failed to load media!\n");
         }
         else {
-            Entity::setBoundaries(screen_width / 16, screen_width * 11 / 16, 0, screen_height * 5 / 6);
+            Entity::setBoundaries(screen_width / 16, screen_width * 11 / 16, - screen_height * 15 / 16, screen_height * 15 / 16);
 
             initializeUnits();
-
-            //unitMap["Player"] = Entity({screen_width / 2, screen_height / 2}, &textures[TextureID::Crow], { (int)(32 * scale_x), (int)(32 * scale_y) });
+            initializeButtons();
         }
     }
-
 }
-
-
-

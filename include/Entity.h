@@ -2,7 +2,6 @@
 #define ENTITY_H
 
 #include <stdio.h>
-#include <string>
 #include <cmath>
 #include "Textures.h"
 #include <vector>
@@ -16,14 +15,14 @@ public:
     const LTexture* draw;
 
     //Maximum velocity of the entity
-    int maximumSpeed = 40;
+    double maximumSpeed = 40;
 
     //Initializes the variables
-    Entity(Vec2D pos, const LTexture* pointer, Vec2D size2);
+    Entity(Vec2D pos, const LTexture* pointer, Vec2I size2);
     Entity();
 
     //Moves the entity
-    void move();
+    void move(double elapsedTime);
 
     //Shows the entity on the screen
     void render(SDL_Renderer* eRenderer, Vec2D cameraPosition);
@@ -38,7 +37,7 @@ public:
     Vec2D getPos() const { return position; }
 
     //Gets entity's size
-    Vec2D getSize() const { return size; }
+    Vec2I getSize() const { return size; }
 
     //Map boundaries
     static void setBoundaries(int LeftBound, int RightBound, int UpBound, int DownBound);
@@ -60,7 +59,7 @@ protected:
     Vec2D velocity;
 
     //Dimensions of entity
-    Vec2D size;
+    Vec2I size;
 };
 
 
