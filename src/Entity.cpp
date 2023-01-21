@@ -49,11 +49,9 @@ void Entity::SetDefaultTexture(const LTexture& Default) {
     DefaultTexture = Default;
 }
 
-void Entity::render(SDL_Renderer* eRenderer) {
-
-    //Render CROW OF JUDGMENT
-
-    draw->render(eRenderer, position, size);
+void Entity::render(SDL_Renderer* eRenderer, Vec2D cameraPosition) {
+    
+    draw->render(eRenderer, position - cameraPosition, size);
 
 }
 

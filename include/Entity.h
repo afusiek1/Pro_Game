@@ -26,13 +26,19 @@ public:
     void move();
 
     //Shows the entity on the screen
-    void render(SDL_Renderer* eRenderer);
+    void render(SDL_Renderer* eRenderer, Vec2D cameraPosition);
 
     //Updates parameters for entity
     void update(Vec2D velocity);
 
     //Sets entity's position
     void setPos(Vec2D pos) { position = pos; }
+
+    //Gets entity's position
+    Vec2D getPos() const { return position; }
+
+    //Gets entity's size
+    Vec2D getSize() const { return size; }
 
     //Map boundaries
     static void setBoundaries(int LeftBound, int RightBound, int UpBound, int DownBound);

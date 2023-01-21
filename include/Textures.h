@@ -4,11 +4,15 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
+#include <SDL_ttf.h>
 
 //Struct of positions of entities textures
 struct Vec2D {
     int x;
     int y;
+    Vec2D operator - (const Vec2D& other) const {
+        return { this->x - other.x, this->y - other.y };
+    }
 };
 
 //Texture wrapper class
@@ -35,6 +39,9 @@ public:
     //Gets image dimensions
     int getWidth() const;
     int getHeight() const;
+
+    //Creates image from font string
+    bool loadFromRenderedText(std::string textureText, SDL_Color textColor, SDL_Renderer* gRenderer, TTF_Font* tFont);
 
 private:
     //The actual hardware texture

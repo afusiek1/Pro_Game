@@ -35,13 +35,33 @@ private:
 	//Updates everything
 	void update();
 
+	//Render map boundaries
+	void RenderMap();
+
+	//Frame information
+	LTexture frameInfo;
+
+	//Set text color as black
+	SDL_Color textColor = { 255, 255, 255, 255 };
+
+	//Globally used font
+	TTF_Font* gFont = NULL;
+
+	//Current time start time
+	Uint32 lastTime = 0;
+	Uint32 elapsedTime = 0;
+
 public:
 	Game(int screen_width, int screen_height);
+
 	int screen_width = 1920;
 	int screen_height = 1080;
 	void run();
 	double scale_x = 1.f;
 	double scale_y = 1.f;
+
+	Vec2D cameraPosition = { 0,0 };
+
 	std::map<std::string, Unit> unitMap;
 	vector<Unit> unitList;
 
