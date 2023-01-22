@@ -65,22 +65,28 @@ bool Game::loadMedia() {
     textures.resize(TextureID::SIZE, LTexture());
 
     //Load default texture
-    if (!textures[TextureID::DEFAULT].loadFromFile(gRenderer, "Default.png")) {
-        printf("Failed to load background texture image!\n");
+    if (!textures[TextureID::DEFAULT].loadFromFile(gRenderer, "../../../Images/Default.png")) {
+        printf("Failed to load default texture image!\n");
+        success = false;
+    }
+
+    //Load default base texture
+    if (!textures[TextureID::REDBASE].loadFromFile(gRenderer, "../../../Images/Base_default.png")) {
+        printf("Failed to load base default texture image!\n");
+        success = false;
+    }
+
+    //Load default base texture
+    if (!textures[TextureID::BLUEBASE].loadFromFile(gRenderer, "../../../Images/Base_default.png")) {
+        printf("Failed to load base default texture image!\n");
         success = false;
     }
 
     Entity::SetDefaultTexture(textures[TextureID::DEFAULT]);
 
     //Load background texture
-    if (!textures[TextureID::BACKGROUND].loadFromFile(gRenderer, "Bckgnd.png")) {
+    if (!textures[TextureID::BACKGROUND].loadFromFile(gRenderer, "../../../Images/Bckgnd.png")) {
         printf("Failed to load background texture image!\n");
-        success = false;
-    }
-
-    //Load Crow od Judgement
-    if (!textures[TextureID::CROW].loadFromFile(gRenderer, "Crow.png")) {
-        printf("Failed to load Crow od Judgement!\n");
         success = false;
     }
 
@@ -372,11 +378,11 @@ void Game::run() {
 void Game::initializeUnits() {
 
     //Debug player unit
-    unitMap["None Selected"] = Unit(1000.0, 500, 1000, 1000, 0.4, 10, 10, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::CROW], { (int)(0 * scale_x), (int)(0 * scale_y) });
+    unitMap["None Selected"] = Unit(1000.0, 500, 1000, 1000, 0.4, 10, 10, true, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(0 * scale_x), (int)(0 * scale_y) });
 
     //Bases
-    unitMap["Blue Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
-    unitMap["Red Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(64 * scale_x), (int)(64 * scale_y) });
+    unitMap["Blue Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 16, screen_height * 7 / 8 }, &textures[TextureID::BLUEBASE], { (int)(screen_width * 5 / 8), (int)(64 * scale_y) });
+    unitMap["Red Base"] = Unit(5000.0, 0, 0, 0, 1, 0, 5, false, "Base", { screen_width / 16, - screen_height * 15 / 16 }, &textures[TextureID::REDBASE], { (int)(screen_width * 5 / 8), (int)(64 * scale_y) });
 
     //Infantry units
     unitMap["Rifleman"] = Unit(15.0, 50, 70, 2.5, 1.2, 4, 0, false, "Infantry", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(32 * scale_x), (int)(32 * scale_y) });
@@ -394,6 +400,10 @@ void Game::initializeUnits() {
     unitMap["Tank"] = Unit(240.0, 60, 80, 25, 2, 2, 3, false, "Tank", { screen_width / 3, screen_height / 3 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
     unitMap["Big Tank"] = Unit(450.0, 70, 90, 40, 3, 2, 4, false, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
     unitMap["Artillery"] = Unit(160.0, 150, 200, 120, 8, 1, 3, true, "Tank", { screen_width / 2, screen_height / 2 }, &textures[TextureID::DEFAULT], { (int)(96 * scale_x), (int)(96 * scale_y) });
+
+    unitList.push_back(unitMap["Blue Base"]);
+    unitList.push_back(unitMap["Red Base"]);
+
 }
 
 void Game::initializeButtons() {
@@ -410,55 +420,55 @@ void Game::initializeButtons() {
 
     allButtons[1].setPosition({ (int) (screen_width * 3 / 4 + 224 * scale_x) , screen_height / 16 });
     allButtons[1].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[1].buttonTexture = &textures[TextureID::CROW];
+    allButtons[1].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[1].buttonName = "Machine Gunner";
 
     allButtons[2].setPosition({ (int) (screen_width * 3 / 4 + 352 * scale_x), screen_height / 16 });
     allButtons[2].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[2].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[2].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[2].buttonName = "Sniper";
 
     //row 2
     allButtons[3].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 3 / 16 });
     allButtons[3].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[3].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[3].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[3].buttonName = "Bazooker";
 
     allButtons[4].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 3 / 16 });
     allButtons[4].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[4].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[4].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[4].buttonName = "Car with machine gun";
 
     allButtons[5].setPosition({ (int)(screen_width * 3 / 4 + 352 * scale_x), screen_height * 3 / 16 });
     allButtons[5].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[5].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[5].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[5].buttonName = "Armored Car with turret";
 
     //row 3
     allButtons[6].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 5 / 16 });
     allButtons[6].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[6].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[6].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[6].buttonName = "RPG Car";
 
     allButtons[7].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 5 / 16 });
     allButtons[7].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[7].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[7].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[7].buttonName = "Minigun Car";
 
     allButtons[8].setPosition({ (int)(screen_width * 3 / 4 + 352 * scale_x), screen_height * 5 / 16 });
     allButtons[8].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[8].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[8].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[8].buttonName = "Tank";
 
     //row 4
     allButtons[9].setPosition({ (int)(screen_width * 3 / 4 + 96 * scale_x), screen_height * 7 / 16 });
     allButtons[9].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[9].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[9].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[9].buttonName = "Big Tank";
 
     allButtons[10].setPosition({ (int)(screen_width * 3 / 4 + 224 * scale_x), screen_height * 7 / 16 });
     allButtons[10].setButtonSize({ (int)(64 * scale_x), (int)(64 * scale_y) });
-    allButtons[10].buttonTexture = &textures[TextureID::BACKGROUND];
+    allButtons[10].buttonTexture = &textures[TextureID::DEFAULT];
     allButtons[10].buttonName = "Artillery";
 }
 

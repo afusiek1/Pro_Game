@@ -74,7 +74,7 @@ private:
 };
 
 //Enum for all textures
-enum TextureID { DEFAULT = 0, BACKGROUND, CROW, SIZE };
+enum TextureID { DEFAULT = 0, BACKGROUND, BLUEBASE, REDBASE, SIZE };
 
 
 

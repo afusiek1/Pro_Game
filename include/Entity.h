@@ -6,7 +6,7 @@
 #include "Textures.h"
 #include <vector>
 
-using std::cin, std::vector;
+using std::cin, std::cout, std::vector;
 
 //The entity that will move around on the screen
 class Entity {
